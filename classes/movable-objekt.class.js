@@ -6,6 +6,7 @@ class MovableObjekt {
   width = 100;
   imageCache = {};
    currentImage = 0;
+   otherDirection = false;
 
 
   loadImage(path) {
@@ -18,7 +19,7 @@ loadImages(arr) {
   arr.forEach((path) => {
     const img = new Image();
     img.src = path;
-    this.imageCache[path] = img; // <== Kleines i!
+    this.imageCache[path] = img; 
   });
 }
 
