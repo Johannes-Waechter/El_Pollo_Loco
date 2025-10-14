@@ -1,11 +1,5 @@
 class MovableObjekt extends drawableObject {
-  x = 120;
-  y = 300;
-  img;
-  height = 200;
-  width = 100;
-  imageCache = {};
-  currentImage = 0;
+
   otherDirection = false;
   speedY = 0;
   acceleration = 2;
@@ -31,24 +25,6 @@ lastHit = 0;
   jump() {
     if (!this.isaboveGround()) {
       this.speedY = 18; // Sprungkraft
-    }
-  }
-
-  loadImages(arr) {
-    arr.forEach((path) => {
-      const img = new Image();
-      img.src = path;
-      this.imageCache[path] = img;
-    });
-  }
-  
-  drawFrame(ctx) {
-    if (this instanceof Character || this instanceof chicken) {
-      ctx.beginPath()
-      ctx.lineWidth = 5;
-      ctx.strokeStyle = 'blue';
-      ctx.rect(this.x, this.y, this.width, this.height);
-      ctx.stroke();
     }
   }
 

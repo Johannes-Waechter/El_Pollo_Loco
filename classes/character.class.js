@@ -90,7 +90,7 @@ class Character extends MovableObjekt {
     // Animationen & Bewegung
     animate() {
         setInterval(() => {
-  if (this.world.keyboard.up) {
+  if (this.world.keyboard.space) {
             this.jump();
         }
             // Bewegung
