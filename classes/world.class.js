@@ -1,9 +1,7 @@
 class World {
 
     character = new Character();
-    clouds = level1.clouds;
-    enemies = level1.enemies;
-    backgroundObjects = level1.backgroundObjects;
+    level = level1;
     canvas;
     ctx;
     keyboard;
@@ -24,6 +22,7 @@ class World {
 
     setWorld() {
         this.character.world = this;
+        this.character.animate();
     }
 
     draw() {
@@ -31,12 +30,12 @@ class World {
 
         this.ctx.translate(this.camera_x, 0);
 
-        this.addObjectsToMap(this.backgroundObjects);
-        this.addObjectsToMap(this.clouds);
-        this.addObjectsToMap(this.enemies);
+        this.addObjectsToMap(this.level.backgroundObjects);
+        this.addObjectsToMap(this.level.clouds);
+        this.addObjectsToMap(this.level.enemies);
         this.addToMap(this.character);
 
-          this.ctx.translate(-this.camera_x, 0);
+        this.ctx.translate(-this.camera_x, 0);
 
 
         let self = this;
@@ -46,24 +45,31 @@ class World {
     }
 
     addToMap(mo) {
-    if (mo.otherDirection) {
-        this.ctx.save();
-        this.ctx.translate(mo.width, 0);
-        this.ctx.scale(-1, 1);
-        mo.x = mo.x * -1;
+        if (mo.otherDirection) {
+            this.flipImage(mo);
+        }
+        mo.draw(this.ctx); 
+        mo.drawFrame(this.ctx); 
+        if (mo.otherDirection) {
+            this.flipImageback(mo);
+        }
     }
-
-    this.ctx.drawImage(mo.img, mo.x, mo.y, mo.width, mo.height);
-
-    if (mo.otherDirection) {
-        mo.x = mo.x * -1;
-        this.ctx.restore();
-    }
-}
 
     addObjectsToMap(objects) {
         objects.forEach(o => {
             this.addToMap(o);
         });
     }
+    flipImage(mo) {
+         this.ctx.save();
+            this.ctx.translate(mo.width, 0);
+            this.ctx.scale(-1, 1);
+            mo.x = mo.x * -1;
+}
+
+flipImageback(mo) {
+         this.ctx.restore();
+            mo.x = mo.x * -1;           
+}
+
 }
