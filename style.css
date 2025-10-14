@@ -3,7 +3,24 @@ body {
     justify-content: center;
     align-items: center;
     flex-direction: column;
+
+    /* Hintergrundbild */
+    background-image: url('img/desert-826238_1280.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+
+    /* Body auf volle Höhe */
+    height: 100vh;
+    margin: 0;
 }
+
+canvas {
+    background-color: black;
+}
+
+
 canvas{
     background-color: black;
 }

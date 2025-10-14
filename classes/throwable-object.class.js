@@ -23,7 +23,7 @@ class ThrowableObject extends MovableObjekt {
     this.y = y;
     this.loadImages(this.image_rotation);
     this.loadImages(this.image_bottle);
-    this.throw();
+    
 
     // zufälliges Bodenbild auswählen
     const randomIndex = Math.floor(Math.random() * this.image_bottle.length);
