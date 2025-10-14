@@ -1,4 +1,4 @@
-class MovableObjekt {
+class MovableObjekt extends drawableObject {
   x = 120;
   y = 300;
   img;
@@ -33,11 +33,6 @@ lastHit = 0;
       this.speedY = 18; // Sprungkraft
     }
   }
-  loadImage(path) {
-    this.img = new Image()
-    this.img.src = path;
-
-  }
 
   loadImages(arr) {
     arr.forEach((path) => {
@@ -46,9 +41,7 @@ lastHit = 0;
       this.imageCache[path] = img;
     });
   }
-  draw(ctx) {
-    ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
-  }
+  
   drawFrame(ctx) {
     if (this instanceof Character || this instanceof chicken) {
       ctx.beginPath()
