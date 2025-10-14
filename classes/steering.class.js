@@ -6,4 +6,5 @@ up = false;
 down = false;
 space = false;
 
+d = false;
 }

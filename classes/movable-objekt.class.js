@@ -19,7 +19,11 @@ lastHit = 0;
   }
 
   isaboveGround() {
-    return this.y < 130; // Bodenhöhe = 130
+    if (!(this instanceof ThrowableObject)) {
+      return true;
+    }
+    else {      return this.y < 130; // Bodenhöhe = 130
+    }
   }
 
   jump() {

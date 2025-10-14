@@ -15,7 +15,7 @@ window.addEventListener("keydown", (e) => {
     case "ArrowRight": keyboard.right = true; break;
     case "ArrowLeft":  keyboard.left = true; break;
     case "ArrowDown":  keyboard.down = true; break;
-    case "d":          keyboard.up = true; break;
+    case "d":          keyboard.d = true; break;
     case " ":
     case "Spacebar":
     case "Space":      keyboard.space = true; break;
@@ -28,7 +28,7 @@ window.addEventListener("keyup", (e) => {
     case "ArrowRight": keyboard.right = false; break;
     case "ArrowLeft":  keyboard.left = false; break;
     case "ArrowDown":  keyboard.down = false; break;
-    case "d":          keyboard.up = false; break;
+    case "d":          keyboard.d = false; break;
     case " ":
     case "Spacebar":
     case "Space":      keyboard.space = false; break;
