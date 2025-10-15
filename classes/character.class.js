@@ -1,12 +1,19 @@
 class Character extends MovableObjekt {
-
     height = 300;
     width = 125;
     y = 130; // Bodenhöhe
     x = 100;
 
-    speedY = 0; // vertikale Geschwindigkeit
-    acceleration = 1; // Gravitation
+    speedY = 0;
+    acceleration = 1;
+
+    deathFrameIndex = 0;
+    deathPlaying = false;
+    deathTimer = 0;
+
+    idleTimer = 0;
+    isGameOver = false;
+    gameOverImg = new Image();
 
     world;
 
@@ -69,7 +76,7 @@ class Character extends MovableObjekt {
         'img/2_character_pepe/1_idle/long_idle/I-19.png',
         'img/2_character_pepe/1_idle/long_idle/I-20.png',
     ];
-    constructor() {
+       constructor() {
         super().loadImage('img/2_character_pepe/2_walk/W-21.png');
         this.loadImages(this.images_walking);
         this.loadImages(this.images_jumping);
@@ -77,69 +84,80 @@ class Character extends MovableObjekt {
         this.loadImages(this.images_hurt);
         this.loadImages(this.images_idle);
         this.loadImages(this.images_longIdle);
+
+        this.gameOverImg.src = 'img/You won, you lost/Game Over.png';
+
         this.applyGravity();
         this.animate();
     }
 
-    // Prüft, ob der Charakter in der Luft ist
     isaboveGround() {
-        return this.y < 130; // Bodenhöhe = 130
+        return this.y < 130;
     }
-
-   
-    // Animationen & Bewegung
+isdead() {
+    return this.energy <= 0; // nur true, wenn der Charakter wirklich tot ist
+}
     animate() {
         setInterval(() => {
-  if (this.world.keyboard.space) {
-            this.jump();
-        }
-            // Bewegung
-            if (this.world.keyboard.right && this.x < this.world.level.level_end_x) {
-                this.moveRight()
-            }
-            if (this.world.keyboard.left && this.x > 100) {
-               this.moveLeft(10);
-               this.otherDirection = true;
+            // --- Tod ---
+            if (this.isdead()) {
+                if (!this.deathPlaying) {
+                    this.deathPlaying = true;
+                    this.deathFrameIndex = 0;
+                    this.deathTimer = 0;
+                }
+
+                this.deathTimer += 100;
+                if (this.deathTimer >= 100) {
+                    this.deathTimer = 0;
+                    if (this.deathFrameIndex < this.images_dead.length) {
+                        this.img = this.imageCache[this.images_dead[this.deathFrameIndex]];
+                        this.deathFrameIndex++;
+                    }
+                }
+
+                // Game Over einmalig auslösen
+                if (this.deathFrameIndex >= this.images_dead.length && !this.isGameOver) {
+                    this.gameOver();
+                }
+
+                return; // keine weiteren Animationen nach Tod
             }
 
-            // Animation
-            if (this.isaboveGround()) {
-                this.playAnimation(this.images_jumping);
-            } 
-            else if (this.world.keyboard.left || this.world.keyboard.right) {
-                this.playAnimation(this.images_walking);
-            } 
-            else if (this.hurt()==true) {
-              this.playAnimation(this.images_hurt);
-            }
-             else if (this.isdead()==true) {
-              this.playAnimation(this.images_dead);
-              this.img = this.imageCache['img/You won, you lost/You lost.png'];
+            // --- Bewegung & Sprung ---
+            let moving = false;
+            if (this.world.keyboard.space) { this.jump(); moving = true; }
+            if (this.world.keyboard.right && this.x < this.world.level.level_end_x) { this.moveRight(); moving = true; }
+            if (this.world.keyboard.left && this.x > 100) { this.moveLeft(10); this.otherDirection = true; moving = true; }
 
-              // this.world.gameOver();
-            }
-            else {
-                this.img = this.imageCache[this.images_walking[0]]; // Idle
+            // --- Animationen ---
+            if (this.isaboveGround()) { this.playAnimation(this.images_jumping); this.idleTimer = 0; }
+            else if (this.hurt()) { this.playAnimation(this.images_hurt); this.idleTimer = 0; }
+            else if (moving) { this.playAnimation(this.images_walking); this.idleTimer = 0; }
+            else { 
+                this.idleTimer += 100;
+                if (this.idleTimer >= 2000) { this.playAnimation(this.images_longIdle); }
+                else { this.playAnimation(this.images_idle); }
             }
 
-            // Kamera folgen
             this.world.camera_x = -this.x + 100;
-
-        }, 1000 / 10);
+        }, 100);
     }
 
-    // Animation abspielen
     playAnimation(imagesArray) {
         if (!imagesArray) imagesArray = this.images_walking;
         this.currentImage = (this.currentImage + 1) % imagesArray.length;
         this.img = this.imageCache[imagesArray[this.currentImage]];
     }
 
- 
+gameOver() {
+    if (this.isGameOver) return; // nur einmal
+    this.isGameOver = true;
 
-    // gameOver(){
-    //     document.getElementById('game-over').classList.remove('d-none');
-    //     document.getElementById('restart-button').classList.remove('d-none');
-    // }
+    // Restart Button nur einmal sichtbar machen
+    const restartBtn = document.getElementById('restart-button');
+    restartBtn.classList.remove('d-none');
+}
+
 
 }

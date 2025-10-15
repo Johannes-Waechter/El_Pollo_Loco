@@ -5,7 +5,7 @@ class clouds extends MovableObjekt {
 
     constructor(imagePath) {
         super().loadImage(imagePath);
-        this.x = 200 + Math.random() * 500;
+         this.x = 200 + Math.random() * (3000 - 200);
         this.speed = 0.2 + Math.random() * 0.3; // 0.2–0.5 px pro Frame
         this.animate();
     }

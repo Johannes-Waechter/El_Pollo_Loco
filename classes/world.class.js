@@ -1,5 +1,4 @@
 class World {
-
     character = new Character();
     level = level1;
     canvas;
@@ -8,112 +7,178 @@ class World {
     camera_x = 0;
     statusBar = new StatusBar();
     throwableObjects = [];
+    coins = [];
+
+    isGameOver = false;
     
 
 
-
     constructor(canvas, keyboard) {
-        this.ctx = canvas.getContext('2d')
+        this.ctx = canvas.getContext('2d');
         this.canvas = canvas;
         this.keyboard = keyboard;
-this.initThrowableObjects();
+         window.world = this; // global für onclick
+
+
+        this.initThrowableObjects();
+        this.initCoins();
 
         this.setWorld();
         this.draw();
         this.run();
-
-
     }
 
-
+    restartGame() {
+    const restartBtn = document.getElementById('restart-button');
+    if (restartBtn) restartBtn.classList.add('d-none');
+    location.reload(); // einfach die Seite neu laden
+}
     setWorld() {
         this.character.world = this;
         this.character.animate();
     }
 
+    // Flaschen zufällig erstellen
     initThrowableObjects() {
-    for (let i = 0; i < 10; i++) {
-        let x = 150 + Math.random() * 2350;
-        let y = 330 + Math.random() * 30;
-        this.throwableObjects.push(new ThrowableObject(x, y));
+        for (let i = 0; i < 10; i++) {
+            let x = 150 + Math.random() * 2350;
+            let y = 330 + Math.random() * 30;
+            this.throwableObjects.push(new ThrowableObject(x, y));
+        }
     }
-}
+
+    // Coins an festen Positionen platzieren
+    initCoins() {
+        const positions = [
+            { x: 200, y: 300 }, { x: 400, y: 300 }, { x: 600, y: 300 }, { x: 800, y: 300 }, { x: 1000, y: 300 },
+            { x: 1200, y: 300 }, { x: 1400, y: 300 }, { x: 1600, y: 300 }, { x: 1800, y: 300 }, { x: 2000, y: 300 },
+            { x: 2200, y: 300 }, { x: 2400, y: 300 }, { x: 2600, y: 300 }, { x: 2800, y: 300 }, { x: 3000, y: 300 },
+            { x: 3200, y: 300 }, { x: 3400, y: 300 }, { x: 3600, y: 300 }, { x: 3800, y: 300 }, { x: 4000, y: 300 },
+        ];
+        positions.forEach(pos => {
+            this.coins.push(new Coin(pos.x, pos.y));
+        });
+    }
+
     run() {
         setInterval(() => {
-          this.checkCollisions()
-          this.checkThrowableObjects()   
+            this.checkCoinCollection();
+            this.checkCollisions();
+            this.checkThrowableObjects();
+            this.checkCollectibleObjects(); // Flaschen einsammeln
         }, 200);
     }
 
-    checkThrowableObjects() {
-        if( this.keyboard.d) {
-            let bottle = new ThrowableObject(this.character.x + 100, this.character.y + 100);
-            bottle.speedX = 20;
-             this.throwableObjects.push(bottle);
-        }
-    }
-
-    checkCollisions(){
-          this.level.enemies.forEach((enemy) => {
-                if (this.character.isColliding(enemy)) {
-                   this.character.hit();
-                   console.log(this.character.energy);
-                     this.statusBar.setPercentage(this.character.energy);   
-                }
-            });
-    }
-
-    draw() {
-        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-
-        this.ctx.translate(this.camera_x, 0);
-this.addObjectsToMap(this.level.backgroundObjects);
-
-         this.ctx.translate(-this.camera_x, 0);
-        //  space for fixed objects 
-        this.addToMap(this.statusBar)
-         this.ctx.translate(this.camera_x, 0);
-
-        this.addObjectsToMap  (this.throwableObjects);
-        this.addObjectsToMap(this.level.clouds);
-        this.addObjectsToMap(this.level.enemies);
-        this.addToMap(this.character);
-
-        this.ctx.translate(-this.camera_x, 0);
-
-
-        let self = this;
-        requestAnimationFrame(function () {
-            self.draw()
+    // Coins einsammeln und StatusBar aktualisieren
+    checkCoinCollection() {
+        this.coins.forEach(coin => {
+            if (!coin.isCollected && this.character.isColliding(coin)) {
+                coin.isCollected = true;
+                const collectedCoins = this.getCollectedCoinsCount();
+                const percentage = (collectedCoins / this.coins.length) * 100;
+                this.statusBar.setCoinStatus(percentage);
+            }
         });
     }
 
+    getCollectedCoinsCount() {
+        return this.coins.filter(c => c.isCollected).length;
+    }
+
+    // Flaschen werfen mit Taste "D"
+    checkThrowableObjects() {
+        if (this.keyboard.d) {
+            const bottle = this.throwableObjects.find(b => b.isCollected && !b.isThrown);
+            if (bottle) {
+                const direction = this.character.otherDirection ? -1 : 1;
+                bottle.throw(this.character.x + 50, this.character.y + 50, direction);
+                this.statusBar.setBottleStatus(this.getCollectedBottleCount());
+            }
+        }
+    }
+
+    getCollectedBottleCount() {
+        return this.throwableObjects.filter(b => b.isCollected).length;
+    }
+
+    checkCollectibleObjects() {
+        this.throwableObjects.forEach(bottle => {
+            if (!bottle.isCollected && this.character.isColliding(bottle)) {
+                bottle.isCollected = true;
+                this.statusBar.setBottleStatus(this.getCollectedBottleCount());
+            }
+        });
+    }
+
+    checkCollisions() {
+        this.level.enemies.forEach(enemy => {
+            if (this.character.isColliding(enemy)) {
+                this.character.hit();
+                this.statusBar.setPercentage(this.character.energy);
+            }
+        });
+    }
+
+  draw() {
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+    this.ctx.translate(this.camera_x, 0);
+
+    // Hintergrund
+    this.addObjectsToMap(this.level.backgroundObjects);
+
+    // Coins
+    this.addObjectsToMap(this.coins.filter(c => !c.isCollected));
+
+    // Fixed HUD
+    this.ctx.translate(-this.camera_x, 0);
+    this.statusBar.draw(this.ctx);
+    this.ctx.translate(this.camera_x, 0);
+
+    // Flaschen
+    this.addObjectsToMap(this.throwableObjects.filter(b => !b.isCollected));
+
+    this.addObjectsToMap(this.level.clouds);
+    this.addObjectsToMap(this.level.enemies);
+    this.addToMap(this.character);
+
+    this.ctx.translate(-this.camera_x, 0);
+
+    // Game Over Bild nur zeichnen, Button wird in Character.gameOver() angezeigt
+    if (this.character.isGameOver) {
+        this.ctx.drawImage(
+            this.character.gameOverImg,
+            this.canvas.width / 2 - 300,
+            100,
+            600,
+            200
+        );
+    }
+
+    requestAnimationFrame(() => this.draw());
+}
+
+
     addToMap(mo) {
-        if (mo.otherDirection) {
-            this.flipImage(mo);
-        }
-        mo.draw(this.ctx); 
-        mo.drawFrame(this.ctx); 
-        if (mo.otherDirection) {
-            this.flipImageback(mo);
-        }
+        if (mo.otherDirection) this.flipImage(mo);
+        mo.draw(this.ctx);
+        mo.drawFrame(this.ctx);
+        if (mo.otherDirection) this.flipImageback(mo);
     }
 
     addObjectsToMap(objects) {
-        objects.forEach(o => {
-            this.addToMap(o);
-        });
+        objects.forEach(o => this.addToMap(o));
     }
+
     flipImage(mo) {
-         this.ctx.save();
-            this.ctx.translate(mo.width, 0);
-            this.ctx.scale(-1, 1);
-            mo.x = mo.x * -1;
-}
+        this.ctx.save();
+        this.ctx.translate(mo.width, 0);
+        this.ctx.scale(-1, 1);
+        mo.x = mo.x * -1;
+    }
 
-flipImageback(mo) {
-         this.ctx.restore();
-            mo.x = mo.x * -1;           
-}
-
+    flipImageback(mo) {
+        this.ctx.restore();
+        mo.x = mo.x * -1;
+    }
 }

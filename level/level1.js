@@ -5,10 +5,16 @@ const level1 = new level(
         new chicken(),
         new chicken(),
         new chicken(),
+        new chicken(),
+        new chicken(),
+        new chicken(),
+        new chicken(),
         new endboss(),
     ],
          [
         new clouds('img/5_background/layers/4_clouds/1.png'),
+        new clouds('img/5_background/layers/4_clouds/2.png'),
+         new clouds('img/5_background/layers/4_clouds/1.png'),
         new clouds('img/5_background/layers/4_clouds/2.png'),
 
     ],

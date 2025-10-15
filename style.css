@@ -24,3 +24,7 @@ canvas {
 canvas{
     background-color: black;
 }
+
+.d-none {
+    display: none !important;
+}
