@@ -17,6 +17,13 @@ class Character extends MovableObjekt {
 
     world;
 
+    audio_jump = new Audio('audio/825575_9415332-lq.mp3');
+
+    game_over_audio = new Audio('audio/game-over.mp3')
+    walk_audio = new Audio('audio/walk.mp3')
+
+    hurt_audio = new Audio('audio/hurt.mp3')
+
     images_walking = [
         'img/2_character_pepe/2_walk/W-21.png',
         'img/2_character_pepe/2_walk/W-22.png',
@@ -37,7 +44,7 @@ class Character extends MovableObjekt {
         'img/2_character_pepe/3_jump/J-38.png',
         'img/2_character_pepe/3_jump/J-39.png',
     ];
- images_dead = [
+    images_dead = [
         'img/2_character_pepe/5_dead/D-51.png',
         'img/2_character_pepe/5_dead/D-52.png',
         'img/2_character_pepe/5_dead/D-53.png',
@@ -76,7 +83,7 @@ class Character extends MovableObjekt {
         'img/2_character_pepe/1_idle/long_idle/I-19.png',
         'img/2_character_pepe/1_idle/long_idle/I-20.png',
     ];
-       constructor() {
+    constructor() {
         super().loadImage('img/2_character_pepe/2_walk/W-21.png');
         this.loadImages(this.images_walking);
         this.loadImages(this.images_jumping);
@@ -94,9 +101,9 @@ class Character extends MovableObjekt {
     isaboveGround() {
         return this.y < 130;
     }
-isdead() {
-    return this.energy <= 0; // nur true, wenn der Charakter wirklich tot ist
-}
+    isdead() {
+        return this.energy <= 0; // nur true, wenn der Charakter wirklich tot ist
+    }
     animate() {
         setInterval(() => {
             // --- Tod ---
@@ -119,6 +126,10 @@ isdead() {
                 // Game Over einmalig auslösen
                 if (this.deathFrameIndex >= this.images_dead.length && !this.isGameOver) {
                     this.gameOver();
+                    this.game_over_audio.currentTime = 0;
+                    this.game_over_audio.play();
+                    moving = true;
+
                 }
 
                 return; // keine weiteren Animationen nach Tod
@@ -126,15 +137,48 @@ isdead() {
 
             // --- Bewegung & Sprung ---
             let moving = false;
-            if (this.world.keyboard.space) { this.jump(); moving = true; }
-            if (this.world.keyboard.right && this.x < this.world.level.level_end_x) { this.moveRight(); moving = true; }
-            if (this.world.keyboard.left && this.x > 100) { this.moveLeft(10); this.otherDirection = true; moving = true; }
+            if (this.world.keyboard.space) {
+                this.jump();
+                this.audio_jump.currentTime = 0;
+                this.audio_jump.play();
+                moving = true;
+            }
+
+            if (this.world.keyboard.right && this.x < this.world.level.level_end_x) {
+                this.moveRight();
+                this.walk_audio.currentTime = 0;
+                this.walk_audio.play();
+                moving = true;
+            }
+
+
+            if (this.world.keyboard.left && this.x > 100) {
+                this.moveLeft(10);
+                this.otherDirection = true;
+                this.walk_audio.currentTime = 0;
+                this.walk_audio.play();
+                moving = true;
+            }
 
             // --- Animationen ---
-            if (this.isaboveGround()) { this.playAnimation(this.images_jumping); this.idleTimer = 0; }
-            else if (this.hurt()) { this.playAnimation(this.images_hurt); this.idleTimer = 0; }
-            else if (moving) { this.playAnimation(this.images_walking); this.idleTimer = 0; }
-            else { 
+            if (this.isaboveGround()) {
+                this.playAnimation(this.images_jumping);
+                this.idleTimer = 0;
+            }
+
+            else if (this.hurt()) {
+                this.playAnimation(this.images_hurt);
+                this.hurt_audio.currentTime = 0;
+                this.hurt_audio.play();
+                this.idleTimer = 0;
+
+
+            }
+            else if (moving) {
+                this.playAnimation(this.images_walking);
+                this.idleTimer = 0;
+            }
+            else {
                 this.idleTimer += 100;
                 if (this.idleTimer >= 2000) { this.playAnimation(this.images_longIdle); }
                 else { this.playAnimation(this.images_idle); }
@@ -144,11 +188,13 @@ isdead() {
         }, 100);
     }
 
-    playAnimation(imagesArray) {
-        if (!imagesArray) imagesArray = this.images_walking;
-        this.currentImage = (this.currentImage + 1) % imagesArray.length;
-        this.img = this.imageCache[imagesArray[this.currentImage]];
-    }
+
+
+playAnimation(imagesArray) {
+    if (!imagesArray) imagesArray = this.images_walking;
+    this.currentImage = (this.currentImage + 1) % imagesArray.length;
+    this.img = this.imageCache[imagesArray[this.currentImage]];
+}
 
 gameOver() {
     if (this.isGameOver) return; // nur einmal

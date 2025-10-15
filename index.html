@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>El Pollo Loco</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="fonts.css">
     <link rel="shortcut icon" href="./img/2_character_pepe/3_jump/J-36.png" type="image/x-icon">
 </head>
 
@@ -14,14 +15,25 @@
     <h1>El Pollo Loco</h1>
 
 <canvas id="canvas" width="720" height="480"></canvas>
+<button id="muteButton" class="mute-btn">🔊</button>
 <button id="restart-button" class="d-none" 
-    style="position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); z-index:10;" 
+    style="position:absolute; top:60%; left:50%; transform:translate(-50%, -50%); z-index:10;" 
     onclick="world.restartGame()">
     Restart
 </button>
+<div class="instructions">
+<h3>Steuerung:</h3>
 
+  <strong>Springen:</strong> Leertaste (Space) <br>
+  <strong>Nach rechts:</strong> Pfeiltaste rechts <br>
+  <strong>Nach links:</strong> Pfeiltaste links <br>
+  <strong>Werfen:</strong> Taste D
+</p>
+</div>
 
-
+<footer>
+ <a href="impressum.html" target="_blank">Impressum</a>  
+</footer>
 
     
     <script src="./classes/drawable-object.class.js"></script>

@@ -97,7 +97,7 @@ class StatusBar extends drawableObject {
         return 0;
     }
 
-    // Beide Balken zeichnen
+    //  Balken zeichnen
     draw(ctx) {
         if (this.lifeImg) ctx.drawImage(this.lifeImg, this.x, this.y, this.width, this.height);
         if (this.bottleImg) ctx.drawImage(this.bottleImg, this.x, this.y + 40, this.width, this.height); // Flaschenbalken darunter

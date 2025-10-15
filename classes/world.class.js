@@ -8,24 +8,67 @@ class World {
     statusBar = new StatusBar();
     throwableObjects = [];
     coins = [];
+     isMuted = false
+
+    
+    audio_background = new Audio('audio/95. Mexican.mp3');
+    audio_coin = new Audio('audio/coin.mp3');
 
     isGameOver = false;
     
 
 
-    constructor(canvas, keyboard) {
-        this.ctx = canvas.getContext('2d');
-        this.canvas = canvas;
-        this.keyboard = keyboard;
-         window.world = this; // global für onclick
+constructor(canvas, keyboard) {
+    this.ctx = canvas.getContext('2d');
+    this.canvas = canvas;
+    this.keyboard = keyboard;
+    window.world = this; // global für onclick
 
+    this.initThrowableObjects();
+    this.initCoins();
 
-        this.initThrowableObjects();
-        this.initCoins();
+    this.setWorld();
+    this.draw();
+    this.run();
+    this.initMuteButton();
 
-        this.setWorld();
-        this.draw();
-        this.run();
+    this.audio_background.loop = true;     // Musik soll sich endlos wiederholen
+    this.audio_background.volume = 0.1 ;    // Lautstärke anpassen
+
+    if (!this.isMuted) {
+        this.audio_background.play();
+    }
+}
+
+        initMuteButton() {
+        const muteButton = document.getElementById('muteButton');
+        muteButton.addEventListener('click', () => {
+            this.toggleMute(muteButton);
+        });
+    }
+
+toggleMute(button) {
+    this.isMuted = !this.isMuted;
+
+    // Alle Audio-Objekte stummschalten
+    this.audio_background.muted = this.isMuted;
+    if (this.character && this.character.audio_jump) {
+        this.character.audio_jump.muted = this.isMuted;
+    }
+
+    if (this.isMuted) {
+        this.audio_background.pause();
+    } else {
+        this.audio_background.play();
+    }
+
+    button.textContent = this.isMuted ? '🔇' : '🔊';
+}  
+
+  
+
+    setWorld() {
+        this.character.world = this;
     }
 
     restartGame() {
@@ -73,6 +116,8 @@ class World {
     checkCoinCollection() {
         this.coins.forEach(coin => {
             if (!coin.isCollected && this.character.isColliding(coin)) {
+                this.audio_coin.currentTime = 0;
+                this.audio_coin.play();
                 coin.isCollected = true;
                 const collectedCoins = this.getCollectedCoinsCount();
                 const percentage = (collectedCoins / this.coins.length) * 100;

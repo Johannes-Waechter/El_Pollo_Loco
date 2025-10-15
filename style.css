@@ -14,8 +14,12 @@ body {
     /* Body auf volle Höhe */
     height: 100vh;
     margin: 0;
+    font-family: 'Smokum';
 }
 
+h1{
+    font-size: 75px;
+}
 canvas {
     background-color: black;
 }
@@ -27,4 +31,63 @@ canvas{
 
 .d-none {
     display: none !important;
+   
+}
+
+#restart-button {
+    background-color: #ffcc00;
+    width: 100px;
+    height: 50px;
+    border-width: 5px;
+    border-color: #a1230a;
+    cursor: pointer;
+    border-radius: 16px;
+     font-family: 'Smokum';
+     font-size: 32px;
+}
+
+.mute-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  font-size: 24px;
+  cursor: pointer;
+  width: 48px;
+  height: 48px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+  transition: background 0.2s;
+}
+
+.mute-btn:hover {
+  background: rgba(255, 255, 255, 1);
+}
+
+.instructions {
+    position: absolute;
+    bottom: 50px;        /* etwas Abstand vom oberen Bildschirmrand */
+    left: 20px;       /* linksbündig */
+    max-width: 300px; /* optional, damit Text nicht zu breit */
+    font-size: 24px;  /* größere Schrift */
+    
+}
+
+/* Footer / Impressum */
+footer {
+    position: absolute;
+    bottom: 10px;       /* ganz unten */
+    width: 100%;        /* gesamte Breite */
+    text-align: center; /* mittig */
+}
+
+footer a {
+    color: #fff;       /* Linkfarbe weiß */
+    text-decoration: none; /* keine Unterstreichung */
+    font-size: 16px;   /* etwas größere Schrift */
+}
+
+footer a:hover {
+    text-decoration: underline; /* optional beim Hover */
 }
