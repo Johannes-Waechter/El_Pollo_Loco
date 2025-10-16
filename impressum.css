@@ -21,6 +21,9 @@ body {
     flex-direction: column;
     align-items: center;
 }
+canvas{
+    display: block;
+}
 
 /* Zurück-Link */
 .back-link {
@@ -86,3 +89,4 @@ footer {
     color: #fff;
     padding: 15px 0;
 }
+

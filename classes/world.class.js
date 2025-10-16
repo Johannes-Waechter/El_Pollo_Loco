@@ -8,74 +8,96 @@ class World {
     statusBar = new StatusBar();
     throwableObjects = [];
     coins = [];
-     isMuted = false
-
-    
+    isMuted = false
     audio_background = new Audio('audio/95. Mexican.mp3');
     audio_coin = new Audio('audio/coin.mp3');
-
     isGameOver = false;
-    
 
 
-constructor(canvas, keyboard) {
-    this.ctx = canvas.getContext('2d');
-    this.canvas = canvas;
-    this.keyboard = keyboard;
-    window.world = this; // global für onclick
 
-    this.initThrowableObjects();
-    this.initCoins();
+    constructor(canvas, keyboard) {
+        this.ctx = canvas.getContext('2d');
+        this.canvas = canvas;
+        this.keyboard = keyboard;
+        window.world = this; // global für onclick
 
-    this.setWorld();
-    this.draw();
-    this.run();
-    this.initMuteButton();
+        this.initThrowableObjects();
+        this.initCoins();
 
-    this.audio_background.loop = true;     // Musik soll sich endlos wiederholen
-    this.audio_background.volume = 0.1 ;    // Lautstärke anpassen
+        this.setWorld();
+        this.draw();
+        this.run();
+        this.initMuteButton();
 
-    if (!this.isMuted) {
-        this.audio_background.play();
+        this.audio_background.loop = true;
+        this.audio_background.volume = 0.1;
+
+        if (!this.isMuted) {
+            this.audio_background.play();
+        }
     }
-}
 
-        initMuteButton() {
+    initMuteButton() {
         const muteButton = document.getElementById('muteButton');
         muteButton.addEventListener('click', () => {
             this.toggleMute(muteButton);
         });
     }
 
-toggleMute(button) {
-    this.isMuted = !this.isMuted;
+    toggleMute(button) {
+        this.isMuted = !this.isMuted;
 
-    // Alle Audio-Objekte stummschalten
-    this.audio_background.muted = this.isMuted;
-    if (this.character && this.character.audio_jump) {
-        this.character.audio_jump.muted = this.isMuted;
+        // Alle Audio-Objekte stummschalten
+        this.audio_background.muted = this.isMuted;
+        if (this.character && this.character.audio_jump) {
+            this.character.audio_jump.muted = this.isMuted;
+        }
+
+        if (this.isMuted) {
+            this.audio_background.pause();
+        } else {
+            this.audio_background.play();
+        }
+
+        button.textContent = this.isMuted ? '🔇' : '🔊';
     }
 
-    if (this.isMuted) {
-        this.audio_background.pause();
-    } else {
-        this.audio_background.play();
-    }
 
-    button.textContent = this.isMuted ? '🔇' : '🔊';
-}  
-
-  
 
     setWorld() {
         this.character.world = this;
     }
 
-    restartGame() {
+restartGame() {
     const restartBtn = document.getElementById('restart-button');
     if (restartBtn) restartBtn.classList.add('d-none');
-    location.reload(); // einfach die Seite neu laden
+
+    
+    this.isGameOver = false;
+    this.character = new Character();
+    this.statusBar = new StatusBar();
+    this.throwableObjects = [];
+    this.coins = [];
+
+    // Kamera und Audio resetten
+    this.camera_x = 0;
+    this.audio_background.currentTime = 0;
+
+    // Level & Objekte neu laden
+    this.level = level1; // oder welches Level du aktuell spielst
+    this.initThrowableObjects();
+    this.initCoins();
+
+    
+    this.setWorld();
+
+    
+    if (!this.isMuted) {
+        this.audio_background.play();
+    }
+    this.draw();
 }
+
     setWorld() {
         this.character.world = this;
         this.character.animate();
@@ -150,7 +172,7 @@ toggleMute(button) {
         this.throwableObjects.forEach(bottle => {
             if (!bottle.isCollected && this.character.isColliding(bottle)) {
                 bottle.isCollected = true;
-                this.statusBar.setBottleStatus(this.getCollectedBottleCount());
+                console.log("Flasche eingesammelt!");
             }
         });
     }
@@ -164,44 +186,44 @@ toggleMute(button) {
         });
     }
 
-  draw() {
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    draw() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
-    this.ctx.translate(this.camera_x, 0);
+        this.ctx.translate(this.camera_x, 0);
 
-    // Hintergrund
-    this.addObjectsToMap(this.level.backgroundObjects);
+        // Hintergrund
+        this.addObjectsToMap(this.level.backgroundObjects);
 
-    // Coins
-    this.addObjectsToMap(this.coins.filter(c => !c.isCollected));
+        // Coins
+        this.addObjectsToMap(this.coins.filter(c => !c.isCollected));
 
-    // Fixed HUD
-    this.ctx.translate(-this.camera_x, 0);
-    this.statusBar.draw(this.ctx);
-    this.ctx.translate(this.camera_x, 0);
+        // Fixed HUD
+        this.ctx.translate(-this.camera_x, 0);
+        this.statusBar.draw(this.ctx);
+        this.ctx.translate(this.camera_x, 0);
 
-    // Flaschen
-    this.addObjectsToMap(this.throwableObjects.filter(b => !b.isCollected));
+        // Flaschen
+        this.addObjectsToMap(this.throwableObjects.filter(b => !b.isCollected));
 
-    this.addObjectsToMap(this.level.clouds);
-    this.addObjectsToMap(this.level.enemies);
-    this.addToMap(this.character);
+        this.addObjectsToMap(this.level.clouds);
+        this.addObjectsToMap(this.level.enemies);
+        this.addToMap(this.character);
 
-    this.ctx.translate(-this.camera_x, 0);
+        this.ctx.translate(-this.camera_x, 0);
 
-    // Game Over Bild nur zeichnen, Button wird in Character.gameOver() angezeigt
-    if (this.character.isGameOver) {
-        this.ctx.drawImage(
-            this.character.gameOverImg,
-            this.canvas.width / 2 - 300,
-            100,
-            600,
-            200
-        );
+        // Game Over Bild nur zeichnen, Button wird in Character.gameOver() angezeigt
+        if (this.character.isGameOver) {
+            this.ctx.drawImage(
+                this.character.gameOverImg,
+                this.canvas.width / 2 - 300,
+                100,
+                600,
+                200
+            );
+        }
+
+        requestAnimationFrame(() => this.draw());
     }
-
-    requestAnimationFrame(() => this.draw());
-}
 
 
     addToMap(mo) {
