@@ -13,6 +13,9 @@ class World {
     audio_coin = new Audio('audio/coin.mp3');
     isGameOver = false;
 
+    lastThrowPressed = false;   
+    collectedBottles = 0;
+
 
 
     constructor(canvas, keyboard) {
@@ -64,39 +67,10 @@ class World {
 
 
 
+    
     setWorld() {
         this.character.world = this;
     }
-
-restartGame() {
-    const restartBtn = document.getElementById('restart-button');
-    if (restartBtn) restartBtn.classList.add('d-none');
-
-    
-    this.isGameOver = false;
-    this.character = new Character();
-    this.statusBar = new StatusBar();
-    this.throwableObjects = [];
-    this.coins = [];
-
-    // Kamera und Audio resetten
-    this.camera_x = 0;
-    this.audio_background.currentTime = 0;
-
-    // Level & Objekte neu laden
-    this.level = level1; // oder welches Level du aktuell spielst
-    this.initThrowableObjects();
-    this.initCoins();
-
-    
-    this.setWorld();
-
-    
-    if (!this.isMuted) {
-        this.audio_background.play();
-    }
-    this.draw();
-}
 
     setWorld() {
         this.character.world = this;
@@ -135,47 +109,53 @@ restartGame() {
     }
 
     // Coins einsammeln und StatusBar aktualisieren
-    checkCoinCollection() {
-        this.coins.forEach(coin => {
-            if (!coin.isCollected && this.character.isColliding(coin)) {
-                this.audio_coin.currentTime = 0;
-                this.audio_coin.play();
-                coin.isCollected = true;
-                const collectedCoins = this.getCollectedCoinsCount();
-                const percentage = (collectedCoins / this.coins.length) * 100;
-                this.statusBar.setCoinStatus(percentage);
-            }
-        });
-    }
+   checkCoinCollection() {
+    this.coins.forEach(coin => {
+        if (!coin.isCollected && this.character.isColliding(coin)) {
+            coin.isCollected = true;
+            this.statusBar.setCoinStatus(this.getCollectedCoinsCount() * 10); // z.B. 10% pro Coin
+            this.audio_coin.play();
+        }
+    });
+}
 
     getCollectedCoinsCount() {
         return this.coins.filter(c => c.isCollected).length;
     }
 
     // Flaschen werfen mit Taste "D"
-    checkThrowableObjects() {
-        if (this.keyboard.d) {
-            const bottle = this.throwableObjects.find(b => b.isCollected && !b.isThrown);
-            if (bottle) {
-                const direction = this.character.otherDirection ? -1 : 1;
-                bottle.throw(this.character.x + 50, this.character.y + 50, direction);
-                this.statusBar.setBottleStatus(this.getCollectedBottleCount());
-            }
+lastThrowPressed = false;
+
+checkThrowableObjects() {
+    if (this.keyboard.d && !this.lastThrowPressed && this.collectedBottles > 0) {
+        const bottle = this.throwableObjects.find(b => b.isCollected && !b.isThrown && !b.isUsed);
+        if (bottle) {
+            bottle.throw(this.character.x, this.character.y, this.character.otherDirection ? -1 : 1);
+            bottle.isCollected = false;
+            bottle.isUsed = true;
+            this.collectedBottles--;
+            this.statusBar.setBottleStatus(this.collectedBottles * 10); // StatusBar MINUS rechnen!
         }
+        this.lastThrowPressed = true;
     }
+    if (!this.keyboard.d) {
+        this.lastThrowPressed = false;
+    }
+}
 
     getCollectedBottleCount() {
         return this.throwableObjects.filter(b => b.isCollected).length;
     }
 
-    checkCollectibleObjects() {
-        this.throwableObjects.forEach(bottle => {
-            if (!bottle.isCollected && this.character.isColliding(bottle)) {
-                bottle.isCollected = true;
-                console.log("Flasche eingesammelt!");
-            }
-        });
-    }
+  checkCollectibleObjects() {
+    this.throwableObjects.forEach(bottle => {
+        if (!bottle.isCollected && !bottle.isUsed && this.character.isColliding(bottle)) {
+            bottle.isCollected = true;
+            this.collectedBottles++;
+            this.statusBar.setBottleStatus(this.collectedBottles * 10);
+        }
+    });
+}
 
     checkCollisions() {
         this.level.enemies.forEach(enemy => {
@@ -203,7 +183,7 @@ restartGame() {
         this.ctx.translate(this.camera_x, 0);
 
         // Flaschen
-        this.addObjectsToMap(this.throwableObjects.filter(b => !b.isCollected));
+        this.addObjectsToMap(this.throwableObjects.filter(b => !b.isCollected || b.isThrown));
 
         this.addObjectsToMap(this.level.clouds);
         this.addObjectsToMap(this.level.enemies);

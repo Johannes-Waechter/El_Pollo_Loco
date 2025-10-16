@@ -3,6 +3,7 @@ class ThrowableObject extends MovableObjekt {
     height = 75;
     isCollected = false;
     isThrown = false;
+    isUsed = false; // NEU
     speedX = 0;
     speedY = 0;
     gravity = 0.5;
